@@ -1,5 +1,5 @@
 #!/bin/bash
-
+## 
 # Path to the generated file
 file_path="/var/tmp/ibdiagnet2/ibdiagnet2.db_csv"
 lookup_file="/var/tmp/ibdiagnet2/ibdiagnet2.db_csv"
@@ -53,7 +53,7 @@ done < "$lookup_file"
 # Flag to track when we are between START_WARNINGS_FW_CHECK and END_WARNINGS_FW_CHECK
 processing=false
 
-# Read the target file line by line
+# Read the target file line by line``
 while IFS= read -r line; do
     # Check if we are starting to process
     if [[ "$line" == *"START_WARNINGS_FW_CHECK"* ]]; then
