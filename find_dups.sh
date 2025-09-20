@@ -13,10 +13,14 @@ output_file="output.csv"
 duplicate_file="duplicates.csv"
 duplicate_count_file="duplicate_counts.csv"
 file_path="/var/tmp/ibdiagnet2/ibdiagnet2.db_csv"
- 
+
+# Output file where results will be stored
+my_name=$(basename "$0" | awk -F. '{print $1}')
+output_file="${my_name}.csv"
+
 # Function to show help message
 show_help() {
-    echo "Usage: $0 [options]"
+    echo "Usage: ${my_name}.sh [options]"
     echo "Options:"
     echo "  -h, --help        Show this help message and exit"
     echo "  -f, --file FILE   Specify the path to the ibdiagnet.db_csv file"

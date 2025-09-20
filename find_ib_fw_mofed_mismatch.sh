@@ -1,10 +1,10 @@
 #!/bin/bash
 # This script identifies hosts with incorrect firmware versions based on ibdiagnet2 output
-output_file=""
+my_name=$(basename "$0" | awk -F. '{print $1}')
+output_file="${my_name}.out"
 
 show_help() {
-    my_name=$(basename "$0")
-    echo "Usage: $my_name [options]"
+    echo "Usage: ${my_name}.sh [options]"
     echo "Options:"
     echo "  -h        Show this help message"
     echo "  -o FILE   Output results to FILE (optional)"
@@ -43,6 +43,7 @@ awk -F ',' '{print $1,$9}'| awk '{print $1}'| sed 's/"//g'| sort -u)
 
 if [[ -n "$output_file" ]]; then
     echo "$result" > "$output_file"
+    echo "wrote: $output_file"
 else
     echo "$result"
 fi

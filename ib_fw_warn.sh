@@ -5,21 +5,20 @@ file_path="/var/tmp/ibdiagnet2/ibdiagnet2.db_csv"
 lookup_file="/var/tmp/ibdiagnet2/ibdiagnet2.db_csv"
 
 # Output file where results will be stored
-output_file="fw_check_output.csv"
-
+my_name=$(basename "$0" | awk -F. '{print $1}')
+output_file="${my_name}.csv"
 
 # Function to display help
 show_help() {
-    my_name=$(basename "$0")
     echo ""
-    echo "Usage: $my_name [options]"
+    echo "Usage: ${my_name}.sh [options]"
     echo "Options:"
     echo "  -h, --help        Show this help message and exit"
     echo "  -f <file>         Specify input file path (default: $file_path)"
     echo "  -l <lookup_file>  Specify lookup file path (default: $lookup_file)"
     echo "  -o <output_file>  Specify output file path (default: $output_file)"
     echo ""
-    echo "$my_name looks up WARNINGS_FW_CHECK section in ibdiagnet2.db_csv "
+    echo "${my_name}.sh looks up WARNINGS_FW_CHECK section in ibdiagnet2.db_csv "
     echo "and replaces GUIDs with Node names from the NODES section."
     echo "Output is saved in CSV format with columns: column_2 (Node name), column_6 (summary)"    
 }
@@ -130,4 +129,4 @@ while IFS= read -r line; do
 done < "$file_path"
 
 # Display the results
-cat "$output_file"
+echo  "Wrote: $output_file"
