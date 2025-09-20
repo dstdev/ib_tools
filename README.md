@@ -13,9 +13,11 @@ GUIDs in ibdiagnet outputs, find duplicate node entries, and detect firmware/dri
 4. Put `IB_INFO.sh` on a common storage location or run it on each host to collect
    local system and Mellanox card information.
    ex: ``clush -a /shared/path/to/IB_INFO.sh >> ib_info_output.csv``
-5. Run: `IB_INFO2.sh`
-6. Run: `find_dups.sh`
-7. Run: `find_ib_fw_mofed_mismatch.sh` on a host
+5. Collect `ibdiagnet` output files (usually under `/var/tmp/ibdiagnet2/`)
+   from a host with access to the IB fabric if needed.
+6. Run: `ib_fw_warn.sh`
+7. Run: `find_dups.sh`
+8. Run: `find_ib_fw_mofed_mismatch.sh` on a host
    with access to `ibdiagnet` output files (usually under `/var/tmp/ibdiagnet2/`).
 
 
@@ -24,7 +26,7 @@ GUIDs in ibdiagnet outputs, find duplicate node entries, and detect firmware/dri
 - `IB_INFO.sh` — Collects local system information about InfiniBand interfaces and Mellanox cards
 	and emits one CSV line per unique card: Hostname, Serial, Model, OS, Kernel, Card Model,
 	Driver Type, Driver Version, Firmware Version.
-- `IB_INFO2.sh` — Parses an `ibdiagnet2.db_csv` file and extracts the WARNINGS_FW_CHECK section,
+- `ib_fw_warn.sh` — Parses an `ibdiagnet2.db_csv` file and extracts the WARNINGS_FW_CHECK section,
 	replacing GUIDs with node names (from the NODES section). Writes `fw_check_output.csv` by default.
 - `find_dups.sh` — Scans an `ibdiagnet2.db_csv` file for duplicate node entries and produces
 	`output.csv`, `duplicates.csv`, and `duplicate_counts.csv`.
@@ -57,8 +59,8 @@ If a required tool is missing, the script will usually print an error and exit.
 
 2. Make the scripts executable and (optionally) move them into your PATH:
 
-	 chmod +x IB_INFO.sh IB_INFO2.sh find_dups.sh find_ib_fw_mofed_mismatch.sh
-	 sudo mv IB_INFO.sh IB_INFO2.sh find_dups.sh find_ib_fw_mofed_mismatch.sh /usr/local/sbin/
+	 chmod +x IB_INFO.sh ib_fw_warn.sh find_dups.sh find_ib_fw_mofed_mismatch.sh
+	 sudo mv IB_INFO.sh ib_fw_warn.sh find_dups.sh find_ib_fw_mofed_mismatch.sh /usr/local/sbin/
 
 3. Ensure `ibdiagnet` output files are available under `/var/tmp/ibdiagnet2/` when running
 	 the scripts that parse ibdiagnet CSV output, or use the script flags (where available) to
@@ -86,7 +88,7 @@ Notes:
 - Requires an active InfiniBand interface (script looks for `ib*` links that are UP).
 - Requires `dmidecode`, `lspci`, `ethtool` and `ofed_info`/`rpm` to be present to collect all fields.
 
-### IB_INFO2.sh
+### ib_fw_warn.sh
 
 Purpose: parse `ibdiagnet2.db_csv`, extract the `WARNINGS_FW_CHECK` section and replace GUIDs
 with node names from the `NODES` section; writes `fw_check_output.csv` by default.
@@ -94,13 +96,13 @@ with node names from the `NODES` section; writes `fw_check_output.csv` by defaul
 Example (default paths):
 
 ```bash
-./IB_INFO2.sh
+./ib_fw_warn.sh
 ```
 
 Example (with custom files):
 
 ```bash
-./IB_INFO2.sh -f /path/to/ibdiagnet2.db_csv -l /path/to/ibdiagnet2.db_csv -o /tmp/fw_check_output.csv
+./ib_fw_warn.sh -f /path/to/ibdiagnet2.db_csv -l /path/to/ibdiagnet2.db_csv -o /tmp/fw_check_output.csv
 ```
 
 Output: CSV `column_2,column_6` where `column_2` is the node name and `column_6` is the summary.
