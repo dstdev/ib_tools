@@ -12,6 +12,7 @@ GUIDs in ibdiagnet outputs, find duplicate node entries, and detect firmware/dri
 3. Make the scripts executable and (optionally) move them into your PATH.
 4. Put `IB_INFO.sh` on a common storage location or run it on each host to collect
    local system and Mellanox card information.
+   ex: ``clush -a /shared/path/to/IB_INFO.sh >> ib_info_output.csv``
 5. Run: `IB_INFO2.sh`
 6. Run: `find_dups.sh`
 7. Run: `find_ib_fw_mofed_mismatch.sh` on a host
@@ -160,6 +161,3 @@ please add a LICENSE file (for example MIT or Apache 2.0) to make redistribution
 
 If you need help adapting the scripts to your environment, open an issue or contact the
 repository owner.
-
-# ib_tools
-
