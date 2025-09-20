@@ -12,7 +12,8 @@ declare -A unique_ids
 output_file="output.csv"
 duplicate_file="duplicates.csv"
 duplicate_count_file="duplicate_counts.csv"
-
+file_path="/var/tmp/ibdiagnet2/ibdiagnet2.db_csv"
+ 
 # Function to show help message
 show_help() {
     echo "Usage: $0 [options]"
