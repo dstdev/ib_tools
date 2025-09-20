@@ -1,5 +1,34 @@
 #!/bin/bash
 
+# Help function
+show_help() {
+    echo "Usage: $(basename "$0") [OPTIONS]"
+    echo "Options:"
+    echo "  -h, --help      Show this help message and exit"
+    echo "" 
+    echo "This script gathers and displays detailed information about the InfiniBand setup on the system."
+    echo "It collects data such as hostname, serial number, model, OS details, kernel version,"
+    echo "Mellanox card models, driver type, driver version, and firmware version."
+    echo "One output line is generated per unique Mellanox card model found."
+    echo "Output is in CSV format:"
+    echo "Hostname,Serial Number,Model,OS,Kernel,Mellanox Card Model,Driver Type,Driver Version,Firmware Version"
+    echo ""
+    exit 0
+}
+# Parse options and handle help flag
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            show_help
+            ;;          
+        *)
+            echo "Unknown option: $1"
+            show_help
+            exit 1
+            ;;
+    esac
+done    
+
 # Helper function to check command success
 check_command() {
     if [ $? -ne 0 ]; then

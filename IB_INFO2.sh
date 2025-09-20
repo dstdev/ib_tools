@@ -7,12 +7,55 @@ lookup_file="/var/tmp/ibdiagnet2/ibdiagnet2.db_csv"
 # Output file where results will be stored
 output_file="fw_check_output.csv"
 
+
+# Function to display help
+show_help() {
+    my_name=$(basename "$0")
+    echo ""
+    echo "Usage: $my_name [options]"
+    echo "Options:"
+    echo "  -h, --help        Show this help message and exit"
+    echo "  -f <file>         Specify input file path (default: $file_path)"
+    echo "  -l <lookup_file>  Specify lookup file path (default: $lookup_file)"
+    echo "  -o <output_file>  Specify output file path (default: $output_file)"
+    echo ""
+    echo "$my_name looks up WARNINGS_FW_CHECK section in ibdiagnet2.db_csv "
+    echo "and replaces GUIDs with Node names from the NODES section."
+    echo "Output is saved in CSV format with columns: column_2 (Node name), column_6 (summary)"    
+}
+
+# Parse command line options
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -f)
+            file_path="$2"
+            shift 2
+            ;;
+        -l)
+            lookup_file="$2"
+            shift 2
+            ;;
+        -o)
+            output_file="$2"
+            shift 2
+            ;;
+        *)
+            echo "Unknown option: $1"
+            show_help
+            exit 1
+            ;;
+    esac
+done
+
 # Check if the file exists
 if [ ! -f "$file_path" ]; then
     echo "Error: $file_path does not exist. Exiting."
     exit 1
 fi
-
 # Write CSV header
 echo "column_2,column_6" > "$output_file"
 
