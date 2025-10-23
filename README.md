@@ -136,7 +136,8 @@ Example:
 
 By default the script prints hostnames with mismatched firmware. Use `-o <file>` to write
 results to a file.
-
+## Helpful bash commands
+``` sed '/^START_NODES$/,/^END_NODES$/!d;//d' ibdiagnet2.db_csv  | awk -F, '{print $1}' | sed 's/\"//g' | sort -u ```
 ## Troubleshooting
 
 - Permission errors: run scripts with `sudo` or as root when they call `dmidecode`,
