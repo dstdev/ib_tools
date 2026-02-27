@@ -1,0 +1,7 @@
+# Ignore everything by default
+*
+
+# Ship these files only
+!.gitignore
+!README.md
+!ib_info.sh

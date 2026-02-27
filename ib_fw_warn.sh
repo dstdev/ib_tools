@@ -1,6 +1,9 @@
 #!/bin/bash
-## 
+set -euo pipefail
+
 # Path to the generated file
+# file_path and lookup_file default to the same ibdiagnet CSV but can be
+# overridden independently (e.g., warnings from one run, node names from another).
 file_path="/var/tmp/ibdiagnet2/ibdiagnet2.db_csv"
 lookup_file="/var/tmp/ibdiagnet2/ibdiagnet2.db_csv"
 
@@ -83,9 +86,8 @@ while IFS= read -r line; do
 
     # If we are in the node section, process the line
     if $in_nodes_section; then
-        # Extract column 1 (Node name) and column 6 (GUID)
-        column_1=$(echo "$line" | cut -d',' -f1)
-        column_6=$(echo "$line" | cut -d',' -f6)
+        # Extract column 1 (Node name) and column 6 (GUID) using IFS splitting
+        IFS=',' read -r column_1 _ _ _ _ column_6 _ <<< "$line"
 
         # Add the GUID (column 6) as the key and node name (column 1) as the value to the lookup table
         lookup_table["$column_6"]=$column_1
@@ -95,7 +97,7 @@ done < "$lookup_file"
 # Flag to track when we are between START_WARNINGS_FW_CHECK and END_WARNINGS_FW_CHECK
 processing=false
 
-# Read the target file line by line``
+# Read the target file line by line
 while IFS= read -r line; do
     # Check if we are starting to process
     if [[ "$line" == *"START_WARNINGS_FW_CHECK"* ]]; then
@@ -112,14 +114,13 @@ while IFS= read -r line; do
     # If we are between the start and end markers
     if $processing; then
         # Split the line by commas and extract column 2 (GUID) and column 6 (summary)
-        column_2=$(echo "$line" | cut -d',' -f2)
-        column_6=$(echo "$line" | cut -d',' -f6)
+        IFS=',' read -r _ column_2 _ _ _ column_6 _ <<< "$line"
 
         # Remove the '0x' prefix from column 2 (if it exists)
-        column_2=$(echo "$column_2" | sed 's/^0x//')
+        column_2="${column_2#0x}"
 
         # Look up the column_2 value (GUID) in the lookup table and replace with column_1 (Node name)
-        if [[ -n "${lookup_table[$column_2]}" ]]; then
+        if [[ -n "${lookup_table[$column_2]+x}" ]]; then
             column_2="${lookup_table[$column_2]}"
         fi
 

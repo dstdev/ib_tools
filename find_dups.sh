@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Flag to track if we are in the START_NODES section
 inside_nodes=false
@@ -8,15 +9,12 @@ declare -A seen_hostnames
 declare -A duplicate_hostnames
 declare -A unique_ids
 
-# Create the output files for unique and duplicate entries
-output_file="output.csv"
-duplicate_file="duplicates.csv"
-duplicate_count_file="duplicate_counts.csv"
-file_path="/var/tmp/ibdiagnet2/ibdiagnet2.db_csv"
-
 # Output file where results will be stored
 my_name=$(basename "$0" | awk -F. '{print $1}')
 output_file="${my_name}.csv"
+duplicate_file="duplicates.csv"
+duplicate_count_file="duplicate_counts.csv"
+file_path="/var/tmp/ibdiagnet2/ibdiagnet2.db_csv"
 
 # Function to show help message
 show_help() {
@@ -35,12 +33,11 @@ show_help() {
     echo ""
     exit 0
 }
-# Parse command-line options using getopts
+# Parse command-line options
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -h|--help)
             show_help
-            exit 0
             ;;
         -f|--file)
             file_path="$2"
@@ -59,11 +56,6 @@ if [ ! -f "$file_path" ]; then
     echo "Error: File does not exist. Exiting."
     exit 1
 fi
-
-# Clear the previous output files if they exist
-> "$output_file"
-> "$duplicate_file"
-> "$duplicate_count_file"
 
 # Write headers for the CSV files
 echo "Hostname,Vendor Card ID" > "$output_file"
@@ -92,16 +84,16 @@ while IFS=, read -r node_desc col2 col3 col4 col5 col6 col7 col8 col9 col10 col1
     # Process lines inside the START_NODES and END_NODES block
     if $inside_nodes; then
         # Extract the hostname by stripping the 'mlx_' part of the first column (node_desc)
-        hostname=$(echo "$node_desc" | sed 's/mlx_//g')
+        hostname="${node_desc//mlx_/}"
 
         # Extract the vendor card ID from column 9 (index 8)
         vendor_card_id="$col9"
 
         # Extract the unique ID from column 6 (strip '0x')
-        unique_id=$(echo "$col6" | sed 's/^0x//')
+        unique_id="${col6#0x}"
 
         # Check if this hostname has already been seen
-        if [[ -z "${seen_hostnames[$hostname]}" ]]; then
+        if [[ -z "${seen_hostnames[$hostname]+x}" ]]; then
             # If it's the first time we see this hostname, add it to the main file
             echo "$hostname,$vendor_card_id" >> "$output_file"
             seen_hostnames["$hostname"]=1
@@ -111,12 +103,21 @@ while IFS=, read -r node_desc col2 col3 col4 col5 col6 col7 col8 col9 col10 col1
             duplicate_hostnames["$hostname"]=1
 
             # Store unique IDs associated with the duplicate hostname
-            unique_ids["$hostname"]="${unique_ids[$hostname]},$unique_id"
+            unique_ids["$hostname"]="${unique_ids[$hostname]:-},$unique_id"
         fi
     fi
 done < "$file_path"
+
+# Populate the duplicate counts file
+for hostname in "${!duplicate_hostnames[@]}"; do
+    ids="${unique_ids[$hostname]}"
+    # Count the number of duplicate IDs (commas + 1, but leading comma means just count commas)
+    count=$(echo "$ids" | tr -cd ',' | wc -c)
+    echo "$hostname,$count,$ids" >> "$duplicate_count_file"
+done
 
 # Report the number of unique and duplicate hostnames
 echo "Processing complete."
 echo "Unique hostnames saved to: $output_file"
 echo "Duplicate hostnames saved to: $duplicate_file"
+echo "Duplicate counts saved to: $duplicate_count_file"
