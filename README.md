@@ -1,7 +1,7 @@
 # ib_info.sh
 
 Collect InfiniBand hardware and configuration details from cluster nodes running
-RHEL 8 / Rocky Linux 8 with Mellanox ConnectX adapters. Outputs one CSV row per
+RHEL 7+, RHEL 8+, Rocky 8+, or RHEL 9+ with Mellanox ConnectX adapters. Outputs one CSV row per
 unique Mellanox card to stdout; errors and warnings are buffered in memory and
 flushed to stderr as a labeled block at exit. No files are written on the node.
 
@@ -49,13 +49,13 @@ blocks from different nodes can be separated in the aggregated stderr stream.
 
 ## Requirements
 
-- **bash** 5.x
+- **bash** 4.2+ (RHEL 7+, Rocky 8+, RHEL 8+, RHEL 9+)
 - **lspci** (pciutils) — required, detects Mellanox cards
 - **ethtool** — required, reads firmware version
 - **dmidecode** — optional, reads chassis serial and model
 - **ofed_info** — optional, reads installed OFED version
 - **lsb_release** or `/etc/os-release` — optional, reads OS version
-- Standard utilities: `hostname`, `ip`, `awk`, `sed`, `grep`, `find`, `uname`, `rpm`
+- Standard utilities: `hostname`, `ip`, `awk`, `sed`, `grep`, `uname`, `rpm`
 
 Most commands must be run as root or with equivalent privileges.
 
