@@ -270,7 +270,7 @@ kernel=$(uname -r 2>/dev/null) || kernel="UNAVAILABLE"
 
 cardmodels=""
 if [[ "${IB_ENV:-}" == "mock" ]] || command -v lspci &>/dev/null; then
-    cardmodels=$(get_lspci_list 2>/dev/null | grep Mellanox | grep -v "Ethernet controller" | awk '{print $1}' | sed 's/^0000://g' | sort -u) || true
+    cardmodels=$(get_lspci_list 2>/dev/null | grep Mellanox | grep -v "Ethernet controller" | awk '{print $1}' | sed 's/^[0-9a-fA-F]\{4\}://g' | sort -u) || true
 fi
 
 if [ -z "$cardmodels" ]; then
@@ -336,7 +336,7 @@ for cardid in $cardmodels; do
 
         # Get card model for this PCI slot
         if [[ "${IB_ENV:-}" == "mock" ]] || command -v lspci &>/dev/null; then
-            cardmodel=$(get_lspci_slot "${cardid}" 2>/dev/null | awk '{print $6}') || true
+            cardmodel=$(get_lspci_slot "${cardid}" 2>/dev/null | sed 's/^[^:]*:[^:]*: //') || true
             [ -z "$cardmodel" ] && cardmodel="UNAVAILABLE" && log_warn "Could not get card model for PCI slot ${cardid}"
         else
             cardmodel="UNAVAILABLE"
