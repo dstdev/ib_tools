@@ -94,12 +94,18 @@ log_info() {
 run_or_log() {
     local description="$1"
     shift
-    local output
-    if ! output=$("$@" 2>&1); then
-        log_error "$description failed: $(printf '%s' "$output" | head -1)"
+    local output stderr_file
+    stderr_file=$(mktemp /tmp/ib_info_stderr.XXXXXX)
+    if ! output=$("$@" 2>"$stderr_file"); then
+        log_error "$description failed: $(head -1 "$stderr_file")"
+        rm -f "$stderr_file"
         echo "UNAVAILABLE"
         return 1
     fi
+    if [ -s "$stderr_file" ]; then
+        log_warn "$description stderr: $(head -1 "$stderr_file")"
+    fi
+    rm -f "$stderr_file"
     if [ -z "$output" ]; then
         log_warn "$description returned empty output"
         echo "UNAVAILABLE"
@@ -359,14 +365,16 @@ for cardid in $cardmodels; do
 
         if [[ -n "$card_iface" ]]; then
             # Get the network interface for this IB device
-            net_iface=$(find "${SYS_ROOT}/class/infiniband/${card_iface}/device/net/" -maxdepth 1 -mindepth 1 -printf '%f\n' 2>/dev/null | head -1) || true
+            net_iface=$(ls "${SYS_ROOT}/class/infiniband/${card_iface}/device/net/" 2>/dev/null | head -1) || true
             if [[ -n "$net_iface" ]]; then
                 cardfirmware=$(get_ethtool_fw "$net_iface" 2>/dev/null | awk -F: '/^firmware-version/{gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2}') || true
             elif [[ "$link" != "UNAVAILABLE" ]]; then
+                log_warn "No net interface for IB device ${card_iface}, using fallback link ${link} for firmware query"
                 cardfirmware=$(get_ethtool_fw "$link" 2>/dev/null | awk -F: '/^firmware-version/{gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2}') || true
             fi
         elif [[ "$link" != "UNAVAILABLE" ]]; then
-            # Fallback to the first IB link
+            # Fallback to the first IB link — may not correspond to this card on multi-rail nodes
+            log_warn "Could not match card ${base_cardid} to an IB device via sysfs, using fallback link ${link} for firmware query"
             cardfirmware=$(get_ethtool_fw "$link" 2>/dev/null | awk -F: '/^firmware-version/{gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2}') || true
         fi
 
